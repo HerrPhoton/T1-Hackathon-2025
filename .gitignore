@@ -22,5 +22,4 @@ src/nn/logs/*
 !src/nn/logs/.gitkeep
 
 # Weights
-src/nn/weights/*
-!src/nn/weights/.gitkeep
+*.pt
