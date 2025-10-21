@@ -4,8 +4,8 @@ from collections.abc import Iterable, Iterator
 import cv2
 import numpy as np
 
-from src.domain.configs.camera import CameraConfig
-from src.domain.exceptions.camera import CameraOpenError, CameraReadError
+from src.config.camera import CameraConfig
+from src.capture.exceptions import CameraOpenError, CameraReadError
 
 
 class CameraFrameCapture(Iterable[np.ndarray]):
