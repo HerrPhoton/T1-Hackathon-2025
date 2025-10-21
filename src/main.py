@@ -2,11 +2,12 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 
+from src.config.path import SEGMENTATION_WEIGHTS_PATH
 from src.capture.frame_capture import CameraFrameCapture
 
 
 def main():
-    model = YOLO("./src/nn/weights/segmentation/yolo11n-seg.pt")
+    model = YOLO(SEGMENTATION_WEIGHTS_PATH / "yolo11n-seg.pt")
 
     with CameraFrameCapture() as cap:
         for frame in cap:
