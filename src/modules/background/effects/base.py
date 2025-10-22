@@ -1,9 +1,9 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 import numpy as np
 
 
-class BackgroundEffect:
+class BackgroundEffect(ABC):
 
     @abstractmethod
     def make_background(self, frame: np.ndarray) -> np.ndarray:
