@@ -2,31 +2,34 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 
-from src.config.path import SEGMENTATION_WEIGHTS_PATH
-from src.capture.frame_capture import CameraFrameCapture
+from src.config.path import SEGMENTATION_MODEL_PATH
+from src.capture.capture import CameraFrameCapture
+from src.modules.background.effects import SolidColorBackground
+from src.modules.background.processor import BackgroundProcessor
 
 
 def main():
-    model = YOLO(SEGMENTATION_WEIGHTS_PATH / "yolo11n-seg.pt")
+    model = YOLO(SEGMENTATION_MODEL_PATH)
+
+    processor = BackgroundProcessor(
+        effect=SolidColorBackground(color=(0, 0, 0)),
+    )
 
     with CameraFrameCapture() as cap:
         for frame in cap:
             try:
-                background = np.random.randint(0, 255, (480, 640, 3))
-
                 results = model.predict(frame, classes=[0])
 
+                person_polygons = []
                 for result in results:
-                    if result.masks:
-                        for mask in result.masks.xy:
-                            points = np.array([mask], dtype=np.int32)
+                    if result.masks and result.masks.xy is not None:
+                        for polygon in result.masks.xy:
+                            person_polygons.append(np.asarray(polygon, dtype=np.int32))
 
-                            image_mask = np.zeros(frame.shape[:2], dtype=np.uint8)
-                            cv2.fillPoly(image_mask, points, 255)
+                composed = processor.apply(frame, person_polygons)
 
-                            frame = np.where(image_mask[..., np.newaxis] == 255, frame, background).astype(np.uint8)
-
-                cv2.imshow("Video stream", frame)
+                bgr = cv2.cvtColor(composed, cv2.COLOR_RGB2BGR)
+                cv2.imshow("Video stream", bgr)
                 cv2.waitKey(1)
 
             except KeyboardInterrupt:
