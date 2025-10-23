@@ -1,12 +1,20 @@
 import cv2
 
+from src.config import PipelineConfig, SegmenterConfig, BackgroundConfig
+from src.capture import CameraFrameCapture
 from src.pipeline import FramePipeline
-from src.capture.capture import CameraFrameCapture
+from src.config.path import SEGMENTATION_MP_PATH  # , SEGMENTATION_YOLO_PATH
+from src.modules.background import SolidColorBackground
 
 
 def main():
 
-    pipeline = FramePipeline()
+    config = PipelineConfig(
+        #segmenter=SegmenterConfig(model='yolo', model_path=SEGMENTATION_YOLO_PATH),
+        segmenter=SegmenterConfig(model='mediapipe', model_path=SEGMENTATION_MP_PATH),
+        background=BackgroundConfig(SolidColorBackground())
+    )
+    pipeline = FramePipeline(config)
 
     with CameraFrameCapture() as cap:
         for frame in cap:

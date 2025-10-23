@@ -1,8 +1,9 @@
-from .effects import ImageBackground, SolidColorBackground
+from .effects import ImageBackground, BackgroundEffect, SolidColorBackground
 from .processor import BackgroundProcessor
 
 __all__ = [
     'BackgroundProcessor',
+    'BackgroundEffect',
     'SolidColorBackground',
     'ImageBackground'
 ]

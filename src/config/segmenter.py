@@ -1,8 +1,14 @@
+from typing import Literal
 from dataclasses import dataclass
-
-from src.config.path import SEGMENTATION_MODEL_PATH
 
 
 @dataclass
 class SegmenterConfig:
-    model_path: str | None = SEGMENTATION_MODEL_PATH
+    model: Literal['yolo', 'mediapipe']
+    model_path: str | None = None
+
+    def asdict(self):
+        return {
+            "model": self.model,
+            "model_path": self.model_path,
+        }

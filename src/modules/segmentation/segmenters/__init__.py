@@ -1,5 +1,9 @@
+from .base import Segmentor
 from .yolo import YOLOSegmenter
+from .mediapipe import MediaPipeSegmenter
 
 __all__ = [
-    'YOLOSegmenter'
+    'Segmentor',
+    'YOLOSegmenter',
+    'MediaPipeSegmenter',
 ]

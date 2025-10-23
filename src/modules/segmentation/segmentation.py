@@ -2,15 +2,14 @@ from typing import Literal
 
 import numpy as np
 
-from src.config.segmenter import SegmenterConfig
-
+from .segmenters import Segmentor
 from .segmenters.registry import SEGMENTERS
 
 
 class Segmenter:
 
-    def __init__(self, segmenter: Literal['yolo'] = 'yolo', config: SegmenterConfig | None = None) -> None:
-        self.segmenter = SEGMENTERS[segmenter](config)
+    def __init__(self, model: Literal['yolo', 'mediapipe'], **kwargs) -> None:
+        self.segmenter: Segmentor = SEGMENTERS[model](**kwargs)
 
-    def process(self, frame: np.ndarray) -> np.ndarray:
-        return self.segmenter.predict(frame)
+    def segment(self, frame: np.ndarray) -> np.ndarray:
+        return self.segmenter.segment(frame)
