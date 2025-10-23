@@ -3,11 +3,9 @@
 <details open>
 <summary><h2>Установка</h2></summary>
 
-Склонируйте репозиторий и установите все необходимые зависимости.
-
 ```bash
 git clone https://github.com/HerrPhoton/T1-Hackathon-2025.git
-pip install -r requirements.txt
+cd T1-Hackathon-2025/
 ```
 
 </details>
@@ -15,8 +13,16 @@ pip install -r requirements.txt
 <details open>
 <summary><h2>Запуск</h2></summary>
 
+На Windows
+
 ```bash
-python -m src.main
+./scripts/run.bat
+```
+
+На Linux
+
+```bash
+./scripts/run.sh
 ```
 
 </details>
