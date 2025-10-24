@@ -8,9 +8,9 @@ export class ImageBackground extends BackgroundEffect {
         this.mode = mode;
     }
 
-    makeBackground(frameWidth, frameHeight) {
-        const h = frameWidth;
-        const w = frameHeight;
+    makeBackgroundTo(frameWidth, frameHeight) {
+        const h = frameHeight;
+        const w = frameWidth;
 
         const canvas = document.createElement('canvas');
         canvas.width = w;
@@ -35,8 +35,8 @@ export class ImageBackground extends BackgroundEffect {
 
                 ctx.drawImage(
                     this.image,
-                    x0, y0, w, h,    
-                    0, 0, w, h      
+                    x0, y0, w, h,
+                    0, 0, w, h
                 );
                 break;
             default:

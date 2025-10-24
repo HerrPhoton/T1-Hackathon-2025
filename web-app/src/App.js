@@ -54,7 +54,7 @@ function App() {
     const preset = colorPresets.find(preset => preset.value === color);
     return preset ? preset.name : 'Свой цвет';
   };
-  
+
   // Обновлениие фонового цвета
   async function updateBackgroundColor(newColor) {
     setBackgroundColor(newColor);
@@ -125,28 +125,28 @@ function App() {
       }
     ]);
   const [selectedPreset, setSelectedPreset] = useState(null);
-  
+
 
   async function updateBackgroundImage(imageUrl) {
     try {
       // Создаем HTMLImageElement из URL
       const img = new Image();
       img.crossOrigin = "anonymous";
-      
+
       await new Promise((resolve, reject) => {
         img.onload = resolve;
         img.onerror = reject;
         img.src = imageUrl;
       });
-  
+
       // Обновляем состояние
       setSelectedPreset(imageUrl);
-  
+
       if (pipelineRef.current) {
         try {
           const bgEffect = new ImageBackground(img);
           const bgProcessor = new BackgroundProcessor(bgEffect);
-          
+
           // Обновляем только backgroundProcessor в существующем пайплайне
           pipelineRef.current.backgroundProcessor = bgProcessor;
           console.log('Фон успешно обновлен на изображение');
@@ -173,6 +173,7 @@ function App() {
       isPreset: true
     });
     setBackgroundMode('image');
+    updateBackgroundImage(preset.url);
   };
 
   // Функция для загрузки собственного изображения
@@ -183,8 +184,9 @@ function App() {
       name: file.name,
       isPreset: false
     });
-    setSelectedPreset(null); // Сбрасываем выбор пресета
+    setSelectedPreset(null);
     setBackgroundMode('image');
+    updateBackgroundImage(imageUrl);
   };
 
   const handleImageUpload = (event) => {
@@ -197,7 +199,7 @@ function App() {
   const handleDrop = (event) => {
     event.preventDefault();
     setIsDragOver(false);
-    
+
     const file = event.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) {
       handleCustomImageUpload(file);
@@ -250,13 +252,12 @@ function App() {
     }
   };
 
-  // Кнопка применения настроек фона (моежт быть убрать потом ни наю)
+  // Кнопка применения настроек фона
   const applyBackground = () => {
     if (backgroundMode === 'color') {
       updateBackgroundColor(backgroundColor);
     } else if (backgroundMode === 'image' && uploadedImage) {
-
-      console.log('Applying image background:', uploadedImage.url);
+      updateBackgroundImage(uploadedImage.url);
     }
   };
 
@@ -366,14 +367,14 @@ function App() {
       <div className="header-gradient">
         <h1 className="header-title">Web Segmentation</h1>
       </div>
-    
+
       <div className="background-video-layout">
     {/* Сайдбар с настройками фона */}
     <div className="background-settings-sidebar">
       <div className="settings-title">
         🎨 Настройки фона
       </div>
-      
+
       {/* Выбор режима фона */}
       <div className="settings-group">
         <div className="settings-group-title">📋 Режим фона</div>
@@ -399,18 +400,18 @@ function App() {
           <div className="settings-group-title">🌈 Выбор цвета</div>
           <div className="color-picker-container">
             <div className="color-dropdown">
-              <button 
+              <button
                 className="color-dropdown-toggle"
                 onClick={() => setIsColorDropdownOpen(!isColorDropdownOpen)}
               >
-                <div 
-                  className="color-preview" 
+                <div
+                  className="color-preview"
                   style={{ backgroundColor: backgroundColor }}
                 />
                 <span>Выбрать цвет</span>
                 <div className={`arrow ${isColorDropdownOpen ? 'open' : ''}`}>▼</div>
               </button>
-              
+
               {isColorDropdownOpen && (
                 <div className="color-dropdown-menu">
                   <div className="color-presets">
@@ -424,7 +425,7 @@ function App() {
                       />
                     ))}
                   </div>
-                  
+
                   <div className="custom-color-section">
                     <label className="custom-color-label">Свой цвет:</label>
                     <input
@@ -444,7 +445,7 @@ function App() {
     {backgroundMode === 'image' && (
       <div className="settings-group">
         <div className="settings-group-title">🖼️ Выбор фона</div>
-        
+
         {/* Встроенные фоны */}
         <div className="preset-backgrounds">
           <div className="preset-backgrounds-title">🎨 Встроенные фоны:</div>
@@ -455,11 +456,10 @@ function App() {
                 className={`preset-background ${selectedPreset === preset.id ? 'active' : ''}`}
                 onClick={() => {
                   handlePresetSelect(preset);
-                  updateBackgroundImage(preset.url); // Вызываем вашу функцию
                 }}
               >
-                <img 
-                  src={preset.thumbnail} 
+                <img
+                  src={preset.thumbnail}
                   alt={preset.name}
                   className="preset-background-image"
                 />
@@ -504,14 +504,14 @@ function App() {
             </>
           ) : (
             <>
-              <img 
-                src={uploadedImage.url} 
-                alt="Preview" 
+              <img
+                src={uploadedImage.url}
+                alt="Preview"
                 className="uploaded-image-preview"
               />
               <div className="upload-text">{uploadedImage.name}</div>
               <div className="upload-controls">
-                <button 
+                <button
                   className="upload-control-btn"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -520,7 +520,7 @@ function App() {
                 >
                   🗂️ Сменить
                 </button>
-                <button 
+                <button
                   className="upload-control-btn remove"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -543,12 +543,12 @@ function App() {
         {(() => {
           const bgInfo = getCurrentBackgroundInfo();
           if (!bgInfo) return <div className="background-preview-text">Фон не выбран</div>;
-          
+
           if (bgInfo.type === 'color') {
             return (
               <>
-                <div 
-                  className="background-preview-color" 
+                <div
+                  className="background-preview-color"
                   style={{ backgroundColor: bgInfo.value }}
                 />
                 <div className="background-preview-text">
@@ -559,9 +559,9 @@ function App() {
           } else {
             return (
               <>
-                <img 
-                  src={bgInfo.value} 
-                  alt="Current background" 
+                <img
+                  src={bgInfo.value}
+                  alt="Current background"
                   className="background-preview-image"
                 />
                 <div className="background-preview-text">
@@ -581,21 +581,21 @@ function App() {
        {/* Кнопка запуска */}
 
         {!running ? (
-          <button 
+          <button
             className="glass-button start-button"
             onClick={start}
           >
             <span>🎬</span> Start Segmentation
           </button>
         ) : (
-          <button 
+          <button
             className="glass-button stop-button running-animation"
             onClick={stop}
           >
             <span>⏹️</span> Stop Segmentation
           </button>
         )}
-        
+
         <span>Status: {status}</span>
         <span>Provider: {provider}</span>
     </div>
@@ -603,19 +603,19 @@ function App() {
     {/* Основная область с видео */}
     <div className="video-main-container">
       <div className="video-wrapper">
-        <video 
-          ref={videoRef} 
-          playsInline 
-          muted 
+        <video
+          ref={videoRef}
+          playsInline
+          muted
           className="video-element"
-          style={{ display: 'none' }} 
+          style={{ display: 'none' }}
         />
-        <canvas 
-          ref={canvasRef} 
+        <canvas
+          ref={canvasRef}
           className="canvas-element"
         />
       </div>
-      
+
       {/* Здесь можете добавить дополнительные элементы управления видео */}
       <div style={{ color: 'white', opacity: 0.8, fontSize: '0.9rem' }}>
         Разрешение: 640x480 • FPS: 30
