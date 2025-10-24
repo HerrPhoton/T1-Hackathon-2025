@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
 import { CameraController, FrameCapture } from './capture';
 import { FramePipeline } from './pipeline';
-import { YOLOSegSegmentor } from './segmentation';
+import { MediaPipeSegmentor } from './segmentation';
 import { SolidColorBackground, BackgroundProcessor, ImageBackground } from './background';
 
 
@@ -16,7 +16,7 @@ import forestBg from './assets/background/forest.jpg';
 import cityBg from './assets/background/city.jpg';
 
 
-const MODEL_URL = '/models/yolo11n-seg.onnx';
+const MODEL_URL = '/models/selfie_multiclass_simple.onnx';
 
 function App() {
   const videoRef = useRef(null);
@@ -61,7 +61,7 @@ function App() {
 
     if (pipelineRef.current && cameraRef.current) {
       try {
-        const segmenter = new YOLOSegSegmentor(MODEL_URL);
+        const segmenter = new MediaPipeSegmentor(MODEL_URL);
         const bgEffect = new SolidColorBackground(newColor);
         const bgProcessor = new BackgroundProcessor(bgEffect);
         const pipeline = new FramePipeline({ segmenter, backgroundProcessor: bgProcessor });
@@ -285,7 +285,7 @@ function App() {
     }
 
     try {
-      const segmenter = new YOLOSegSegmentor(MODEL_URL);
+      const segmenter = new MediaPipeSegmentor(MODEL_URL);
       const bgEffect = new SolidColorBackground(backgroundColor);
       const bgProcessor = new BackgroundProcessor(bgEffect);
       const pipeline = new FramePipeline({ segmenter, backgroundProcessor: bgProcessor });
