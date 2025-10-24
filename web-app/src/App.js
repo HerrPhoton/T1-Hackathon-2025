@@ -3,7 +3,7 @@ import './App.css';
 import { CameraController, FrameCapture } from './capture';
 import { FramePipeline } from './pipeline';
 import { YOLOSegSegmentor } from './segmentation';
-import { SolidColorBackground, BackgroundProcessor } from './background';
+import { SolidColorBackground, BackgroundProcessor, ImageBackground } from './background';
 
 
 import officeBg1 from './assets/background/office_1.png';
@@ -49,6 +49,12 @@ function App() {
     { name: 'Белый', value: '#ffffff' }
   ];
 
+  // Функция для вывода названия выбранного цвета
+  const getColorName = (color) => {
+    const preset = colorPresets.find(preset => preset.value === color);
+    return preset ? preset.name : 'Свой цвет';
+  };
+  
   // Обновлениие фонового цвета
   async function updateBackgroundColor(newColor) {
     setBackgroundColor(newColor);
@@ -66,12 +72,6 @@ function App() {
       }
     }
   }
-
-  // Функция для вывода названия выбранного цвета
-  const getColorName = (color) => {
-    const preset = colorPresets.find(preset => preset.value === color);
-    return preset ? preset.name : 'Свой цвет';
-  };
 
   // Встроенные фоны
   const [presetBackgrounds, setPresetBackgrounds] = useState([
@@ -126,6 +126,38 @@ function App() {
     ]);
   const [selectedPreset, setSelectedPreset] = useState(null);
   
+
+  async function updateBackgroundImage(imageUrl) {
+    try {
+      // Создаем HTMLImageElement из URL
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = imageUrl;
+      });
+  
+      // Обновляем состояние
+      setSelectedPreset(imageUrl);
+  
+      if (pipelineRef.current) {
+        try {
+          const bgEffect = new ImageBackground(img);
+          const bgProcessor = new BackgroundProcessor(bgEffect);
+          
+          // Обновляем только backgroundProcessor в существующем пайплайне
+          pipelineRef.current.backgroundProcessor = bgProcessor;
+          console.log('Фон успешно обновлен на изображение');
+        } catch (e) {
+          console.error('Ошибка при обновлении изображения фона:', e);
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки изображения:', error);
+    }
+  }
   // Переменнные для состояния настроеек фона
   const [backgroundMode, setBackgroundMode] = useState('color'); // 'color', 'image'
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -421,7 +453,10 @@ function App() {
               <div
                 key={preset.id}
                 className={`preset-background ${selectedPreset === preset.id ? 'active' : ''}`}
-                onClick={() => handlePresetSelect(preset)}
+                onClick={() => {
+                  handlePresetSelect(preset);
+                  updateBackgroundImage(preset.url); // Вызываем вашу функцию
+                }}
               >
                 <img 
                   src={preset.thumbnail} 
@@ -457,7 +492,13 @@ function App() {
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                onChange={handleImageUpload}
+                onChange={(e) => {
+                  handleImageUpload(e);
+                  // После загрузки изображения обновляем фон
+                  if (e.target.files && e.target.files[0]) {
+                    const imageUrl = URL.createObjectURL(e.target.files[0]);
+                    updateBackgroundImage(imageUrl);
+                  }}}
                 className="upload-input"
               />
             </>
@@ -484,6 +525,7 @@ function App() {
                   onClick={(e) => {
                     e.stopPropagation();
                     removeUploadedImage();
+                    updateBackgroundImage(null);
                   }}
                 >
                   🗑️ Удалить

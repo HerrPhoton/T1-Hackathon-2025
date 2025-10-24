@@ -1,14 +1,16 @@
 import { BackgroundEffect } from './base';
 
 export class ImageBackground extends BackgroundEffect {
-    constructor(image, mode = 'stretch') {
+
+    constructor(image = null, mode = 'stretch') {
+        super();
         this.image = image;
         this.mode = mode;
     }
 
-    makeBackground(frame) {
-        const h = frame.videoHeight || frame.height;
-        const w = frame.videoWidth || frame.width;
+    makeBackground(frameWidth, frameHeight) {
+        const h = frameWidth;
+        const w = frameHeight;
 
         const canvas = document.createElement('canvas');
         canvas.width = w;
@@ -37,8 +39,13 @@ export class ImageBackground extends BackgroundEffect {
                     0, 0, w, h      
                 );
                 break;
+            default:
+                console.warn(`Unknown image mode: ${this.mode}. Using 'stretch' as fallback.`);
+                ctx.drawImage(this.image, 0, 0, w, h);
+                break;
         }
 
         return canvas;
     }
 }
+export default ImageBackground;
