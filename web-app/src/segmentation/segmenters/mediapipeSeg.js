@@ -10,24 +10,14 @@ export class MediaPipeSegmentor extends SegmentorBase {
     this.modelUrl = modelUrl;
     this._preprocessCanvas = null;
     this._maskCanvas = null;
-    // MediaPipe модель ожидает входные данные 256x256 с именем 'image'
     this.input = { name: 'image', width: 256, height: 256 };
   }
 
   async init() {
-    // Создаем сессию, но не перезаписываем размеры входных данных
     this.session = await this.createSession(this.modelUrl);
-    // Размеры входных данных уже установлены в конструкторе (256x256)
 
-    // Проверяем доступные входные имена
-    console.log('Available input names:', this.session.inputNames);
-    console.log('Input metadata:', this.session.inputMetadata);
-
-    // Если доступны входные имена, используем первое доступное
-    if (this.session.inputNames && this.session.inputNames.length > 0) {
+    if (this.session.inputNames && this.session.inputNames.length > 0)
       this.input.name = this.session.inputNames[0];
-      console.log(`Using input name: '${this.input.name}'`);
-    }
   }
 
   _getOrCreatePreCanvas(w, h) {
@@ -66,34 +56,28 @@ export class MediaPipeSegmentor extends SegmentorBase {
     const canvas = this._getOrCreatePreCanvas(targetWidth, targetHeight);
     const ctx = canvas.getContext('2d');
 
-    // Очищаем canvas
     ctx.clearRect(0, 0, targetWidth, targetHeight);
 
-    // Получаем размеры видео
     const videoWidth = videoElement.videoWidth;
     const videoHeight = videoElement.videoHeight;
 
-    // Вычисляем соотношение сторон для сохранения пропорций
     const aspectRatio = videoWidth / videoHeight;
     const targetAspectRatio = targetWidth / targetHeight;
 
     let drawWidth, drawHeight, offsetX, offsetY;
 
     if (aspectRatio > targetAspectRatio) {
-      // Видео шире, чем целевой размер
       drawWidth = targetWidth;
       drawHeight = targetWidth / aspectRatio;
       offsetX = 0;
       offsetY = (targetHeight - drawHeight) / 2;
     } else {
-      // Видео выше, чем целевой размер
       drawHeight = targetHeight;
       drawWidth = targetHeight * aspectRatio;
       offsetX = (targetWidth - drawWidth) / 2;
       offsetY = 0;
     }
 
-    // Рисуем видео с центрированием
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, targetWidth, targetHeight);
     ctx.drawImage(videoElement, offsetX, offsetY, drawWidth, drawHeight);
@@ -103,18 +87,16 @@ export class MediaPipeSegmentor extends SegmentorBase {
 
   _imageDataToTensor(imageData, width, height) {
     const data = imageData.data;
-    const tensor = new Float32Array(1 * 3 * height * width);
+    const tensor = new Float32Array(1 * height * width * 3);
 
-    // Конвертируем RGBA в RGB и нормализуем в диапазон [0, 1]
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const pixelIndex = (y * width + x) * 4;
-        const tensorIndex = y * width + x;
+        const tensorIndex = (y * width + x) * 3;
 
-        // R, G, B каналы
-        tensor[0 * height * width + tensorIndex] = data[pixelIndex] / 255.0;     // R
-        tensor[1 * height * width + tensorIndex] = data[pixelIndex + 1] / 255.0; // G
-        tensor[2 * height * width + tensorIndex] = data[pixelIndex + 2] / 255.0; // B
+        tensor[tensorIndex] = data[pixelIndex] / 255.0;         // R
+        tensor[tensorIndex + 1] = data[pixelIndex + 1] / 255.0;   // G
+        tensor[tensorIndex + 2] = data[pixelIndex + 2] / 255.0;   // B
       }
     }
 
@@ -122,29 +104,22 @@ export class MediaPipeSegmentor extends SegmentorBase {
   }
 
   _processSegmentationOutput(outputs, originalWidth, originalHeight, targetWidth, targetHeight) {
-    // Получаем маску из выходных данных модели
     let maskData = null;
     let maskWidth = targetWidth;
     let maskHeight = targetHeight;
 
-    console.log('MediaPipe outputs:', Object.keys(outputs));
-
-    // Ищем выходной тензор с маской
     for (const [name, tensor] of Object.entries(outputs)) {
       const dims = tensor.dims || [];
-      console.log(`Output ${name}:`, dims);
 
       if (dims.length >= 3) {
-        // Предполагаем, что это маска сегментации
         maskData = tensor.data;
         if (dims.length === 4) {
-          maskWidth = dims[3]; // [batch, channels, height, width]
+          maskWidth = dims[3];
           maskHeight = dims[2];
         } else if (dims.length === 3) {
-          maskWidth = dims[2]; // [channels, height, width]
+          maskWidth = dims[2];
           maskHeight = dims[1];
         }
-        console.log(`Using output ${name} with dimensions: ${maskWidth}x${maskHeight}`);
         break;
       }
     }
@@ -153,27 +128,22 @@ export class MediaPipeSegmentor extends SegmentorBase {
       throw new Error('Не удалось найти маску в выходных данных модели');
     }
 
-    // Создаем canvas для маски
     const maskCanvas = this._getOrCreateMaskCanvas(originalWidth, originalHeight);
     const maskCtx = maskCanvas.getContext('2d');
     maskCtx.clearRect(0, 0, originalWidth, originalHeight);
 
-    // Создаем временный canvas для маски из модели
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = maskWidth;
     tempCanvas.height = maskHeight;
     const tempCtx = tempCanvas.getContext('2d');
 
-    // Создаем ImageData для маски
     const maskImageData = tempCtx.createImageData(maskWidth, maskHeight);
 
-    // Обрабатываем данные маски
     for (let y = 0; y < maskHeight; y++) {
       for (let x = 0; x < maskWidth; x++) {
         const index = y * maskWidth + x;
         const pixelIndex = index * 4;
 
-        // Получаем значение маски (предполагаем, что это вероятность)
         let maskValue = 0;
         if (Array.isArray(maskData)) {
           maskValue = maskData[index] || 0;
@@ -181,11 +151,9 @@ export class MediaPipeSegmentor extends SegmentorBase {
           maskValue = maskData[index] || 0;
         }
 
-        // Применяем пороговое значение (для MediaPipe обычно 0.5)
         const threshold = 0.5;
         const alpha = maskValue > threshold ? 255 : 0;
 
-        // Устанавливаем белый цвет с альфой
         maskImageData.data[pixelIndex] = 255;     // R
         maskImageData.data[pixelIndex + 1] = 255; // G
         maskImageData.data[pixelIndex + 2] = 255; // B
@@ -193,12 +161,8 @@ export class MediaPipeSegmentor extends SegmentorBase {
       }
     }
 
-    console.log(`Processed mask: ${maskWidth}x${maskHeight}, data length: ${maskData.length}`);
-
-    // Помещаем ImageData на временный canvas
     tempCtx.putImageData(maskImageData, 0, 0);
 
-    // Масштабируем маску до исходного размера видео
     maskCtx.imageSmoothingEnabled = true;
     maskCtx.drawImage(tempCanvas, 0, 0, maskWidth, maskHeight, 0, 0, originalWidth, originalHeight);
 
@@ -225,10 +189,10 @@ export class MediaPipeSegmentor extends SegmentorBase {
     // Конвертируем в тензор
     const tensor = this._imageDataToTensor(imageData, targetWidth, targetHeight);
 
-    // Создаем ONNX тензор
-    const inputTensor = new ort.Tensor('float32', tensor, [1, 3, targetHeight, targetWidth]);
+    // Создаем ONNX тензор в формате [batch, height, width, channels]
+    const inputTensor = new ort.Tensor('float32', tensor, [1, targetHeight, targetWidth, 3]);
 
-    console.log(`Input tensor shape: [1, 3, ${targetHeight}, ${targetWidth}]`);
+    console.log(`Input tensor shape: [1, ${targetHeight}, ${targetWidth}, 3]`);
 
     try {
       // Запускаем инференс
