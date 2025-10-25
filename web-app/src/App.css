@@ -58,9 +58,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, 
-    #ff00ff 0%, 
-    #cf0060 50%, 
+  background: linear-gradient(135deg,
+    #ff00ff 0%,
+    #cf0060 50%,
     #13a8fe 100%);
   z-index: -1;
 }
@@ -110,9 +110,9 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.2), 
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
     transparent);
   transition: left 0.5s ease;
 }
@@ -133,29 +133,29 @@
 }
 
 .start-button {
-  background: linear-gradient(135deg, 
-  #13a8fe 0%, 
+  background: linear-gradient(135deg,
+  #13a8fe 0%,
   #ff00ff 100%);
   border: 1px solid #ff00ff;
 }
 
 .start-button:hover {
-  background: linear-gradient(135deg, 
-    #13a8fe 0%, 
+  background: linear-gradient(135deg,
+    #13a8fe 0%,
     #ff00ff 100%);
   box-shadow: 0 8px 25px #ff00ff;
 }
 
 .stop-button {
-  background: linear-gradient(135deg, 
-    #cf0060 0%, 
+  background: linear-gradient(135deg,
+    #cf0060 0%,
     #ff00ff 100%);
   border: 1px solid #ff00ff;
 }
 
 .stop-button:hover {
-  background: linear-gradient(135deg, 
-    #cf0060 0%, 
+  background: linear-gradient(135deg,
+    #cf0060 0%,
     #ff00ff 100%);
   box-shadow: 0 8px 25px #ff00ff;
 }
@@ -373,11 +373,11 @@
     align-items: flex-start;
     gap: 15px;
   }
-  
+
   .color-presets {
     grid-template-columns: repeat(6, 1fr);
   }
-  
+
   .color-dropdown-toggle {
     min-width: 140px;
   }
@@ -673,14 +673,14 @@
     flex-direction: column;
     gap: 20px;
   }
-  
+
   .background-settings-sidebar {
     flex: none;
     width: 100%;
     max-width: 500px;
     margin: 0 auto;
   }
-  
+
   .video-main-container {
     width: 100%;
   }
@@ -690,7 +690,7 @@
   .background-settings-sidebar {
     padding: 20px;
   }
-  
+
   .video-element,
   .canvas-element {
     max-width: 100%;
@@ -773,4 +773,40 @@
   align-items: center;
   justify-content: center;
   font-size: 0.8rem;
+}
+
+.privacy-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.privacy-btn {
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.3s ease;
+}
+
+.privacy-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.privacy-btn.active {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: #00ff88;
+}
+
+.info-text {
+  background: rgba(0, 255, 136, 0.1);
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 14px;
+  color: #00ff88;
 }

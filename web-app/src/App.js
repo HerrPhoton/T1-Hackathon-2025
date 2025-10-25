@@ -28,11 +28,16 @@ function App() {
   const loopRef = useRef(null);
 
   const [status, setStatus] = useState('idle');
-  const [provider, setProvider] = useState('auto');
   const [running, setRunning] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState('#1e1e1e');
-
   const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
+
+  const [privacyLevel, setPrivacyLevel] = useState('low');
+  const [fps, setFps] = useState(0);
+
+  const frameCountRef = useRef(0);
+  const lastFpsUpdateRef = useRef(0);
+  const lastFrameTimeRef = useRef(0);
 
   const colorPresets = [
     { name: 'Черный', value: '#170000' },
@@ -48,6 +53,22 @@ function App() {
     { name: 'Желтый', value: '#FCB31E' },
     { name: 'Белый', value: '#ffffff' }
   ];
+
+  // Функция для обновления FPS
+  const updateFps = () => {
+    const now = performance.now();
+    frameCountRef.current++;
+
+    // Обновляем FPS каждые 500ms для плавности
+    if (now - lastFpsUpdateRef.current >= 500) {
+      const elapsed = (now - lastFpsUpdateRef.current) / 1000;
+      const currentFps = Math.round(frameCountRef.current / elapsed);
+      setFps(currentFps);
+
+      frameCountRef.current = 0;
+      lastFpsUpdateRef.current = now;
+    }
+  };
 
   // Функция для вывода названия выбранного цвета
   const getColorName = (color) => {
@@ -261,9 +282,26 @@ function App() {
     }
   };
 
+  // Обновление пайплайна при изменении privacyLevel
+  useEffect(() => {
+    if (running && pipelineRef.current) {
+      if (backgroundMode === 'color') {
+        const bgEffect = new SolidColorBackground(backgroundColor, privacyLevel);
+        const bgProcessor = new BackgroundProcessor(bgEffect);
+        pipelineRef.current.backgroundProcessor = bgProcessor;
+      }
+    }
+  }, [privacyLevel, backgroundColor, running, backgroundMode]);
+
   async function start() {
 
     setStatus('init-camera');
+
+    // Сброс FPS счетчиков
+    frameCountRef.current = 0;
+    lastFpsUpdateRef.current = performance.now();
+    lastFrameTimeRef.current = performance.now();
+    setFps(0);
 
     try {
       if (!videoRef.current) return;
@@ -322,6 +360,7 @@ function App() {
     frameCaptureRef.current = null;
 
     setRunning(false)
+    setFps(0);
   }
 
   async function loop() {
@@ -349,6 +388,8 @@ function App() {
 
       setStatus('running');
 
+      updateFps();
+
     } catch (e) {
       console.error(e);
       setStatus('infer-error');
@@ -360,6 +401,14 @@ function App() {
   useEffect(() => {
     return () => stop();
   }, []);
+
+  const getVideoResolution = () => {
+    if (videoRef.current && videoRef.current.videoWidth) {
+      return `${videoRef.current.videoWidth}x${videoRef.current.videoHeight}`;
+    }
+    return '640x480';
+  };
+
 
   return (
     <div className="App">
@@ -574,12 +623,41 @@ function App() {
         })()}
       </div>
     </div>
-      {/* Кнопка применения */}
-      <button className="apply-background-btn" onClick={applyBackground}>
-        ✅ Применить фон
-      </button>
-       {/* Кнопка запуска */}
+        {/* Секция уровня приватности */}
+        <div className="privacy-settings">
+          <div className="settings-group-title">🔒 Уровень приватности</div>
 
+          <div className="privacy-levels">
+            <div className="privacy-buttons">
+              <button
+                className={`privacy-btn ${privacyLevel === 'high' ? 'active' : ''}`}
+                onClick={() => setPrivacyLevel('high')}
+              >
+                👤 Только имя и должность
+              </button>
+
+              <button
+                className={`privacy-btn ${privacyLevel === 'medium' ? 'active' : ''}`}
+                onClick={() => setPrivacyLevel('medium')}
+              >
+                🏢 + Компания и отдел
+              </button>
+
+              <button
+                className={`privacy-btn ${privacyLevel === 'low' ? 'active' : ''}`}
+                onClick={() => setPrivacyLevel('low')}
+              >
+                📞 Все контакты
+              </button>
+            </div>
+
+            <div className="info-text">
+              ✅ Текст автоматически появится на выбранном фоне
+            </div>
+          </div>
+        </div>
+
+       {/* Кнопка запуска */}
         {!running ? (
           <button
             className="glass-button start-button"
@@ -597,7 +675,6 @@ function App() {
         )}
 
         <span>Status: {status}</span>
-        <span>Provider: {provider}</span>
     </div>
 
     {/* Основная область с видео */}
@@ -616,9 +693,8 @@ function App() {
         />
       </div>
 
-      {/* Здесь можете добавить дополнительные элементы управления видео */}
       <div style={{ color: 'white', opacity: 0.8, fontSize: '0.9rem' }}>
-        Разрешение: 640x480 • FPS: 30
+        Разрешение: {getVideoResolution()} • FPS: {fps}
       </div>
     </div>
   </div>
