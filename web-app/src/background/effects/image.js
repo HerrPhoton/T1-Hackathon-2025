@@ -63,78 +63,188 @@ function parseEmployeeData(data, privacyLevel = 'medium') {
   }
 }
 
-// Функция для преобразования объекта в текст с разными размерами шрифта и пробелами
-function employeeDataToTextWithFontSizes(employeeData) {
+// Функция для расчета базового размера шрифта в зависимости от разрешения
+function calculateBaseFontSize(frameWidth, frameHeight) {
+  // Базовое разрешение для расчета (1920x1080)
+  const baseWidth = 1920;
+  const baseHeight = 1080;
+
+  // Используем минимальную сторону для расчета, чтобы шрифт был читаемым на любом разрешении
+  const minDimension = Math.min(frameWidth, frameHeight);
+  const baseMinDimension = Math.min(baseWidth, baseHeight);
+
+  // Коэффициент масштабирования (0.5-2.0)
+  const scaleFactor = minDimension / baseMinDimension;
+
+  // Базовый размер шрифта для 1080p
+  const baseFontSize = 24;
+
+  // Рассчитываем адаптивный размер шрифта
+  return Math.max(12, Math.min(48, baseFontSize * scaleFactor));
+}
+
+// Функция для преобразования объекта в текст с адаптивными размерами шрифта
+function employeeDataToTextWithFontSizes(employeeData, frameWidth, frameHeight) {
   const privacyLevel = employeeData.privacy_level;
+  const baseFontSize = calculateBaseFontSize(frameWidth, frameHeight);
+
+  // Коэффициенты для разных типов текста
+  const nameMultiplier = 1.8;      // Имя - самый крупный
+  const positionMultiplier = 1.6;  // Должность - крупный
+  const companyMultiplier = 1.0;   // Компания - средний
+  const contactMultiplier = 0.9;   // Контакты - мелкий
+  const sloganMultiplier = 0.8;    // Слоган - самый мелкий
 
   switch (privacyLevel) {
     case 'high':
       return [
-        { text: employeeData.full_name, fontSize: '45px', spacingAfter: 0 },
-        { text: employeeData.position, fontSize: '43px', spacingAfter: 0 }
+        {
+          text: employeeData.full_name,
+          fontSize: Math.round(baseFontSize * nameMultiplier),
+          spacingAfter: 0
+        },
+        {
+          text: employeeData.position,
+          fontSize: Math.round(baseFontSize * positionMultiplier),
+          spacingAfter: 0
+        }
       ];
 
     case 'medium':
       return [
-        { text: employeeData.full_name, fontSize: '40px', spacingAfter: 0 },
-        { text: employeeData.position, fontSize: '38px', spacingAfter: 20 }, // пробел после блока имени/должности
-        { text: employeeData.company, fontSize: '23px', spacingAfter: 0 },
-        { text: employeeData.department, fontSize: '23px', spacingAfter: 0 },
-        { text: employeeData.office_location, fontSize: '23px', spacingAfter: 15 }, // пробел после блока компании/отдела
+        {
+          text: employeeData.full_name,
+          fontSize: Math.round(baseFontSize * nameMultiplier),
+          spacingAfter: 0
+        },
+        {
+          text: employeeData.position,
+          fontSize: Math.round(baseFontSize * positionMultiplier),
+          spacingAfter: Math.round(baseFontSize * 0.8)
+        },
+        {
+          text: employeeData.company,
+          fontSize: Math.round(baseFontSize * companyMultiplier),
+          spacingAfter: 0
+        },
+        {
+          text: employeeData.department,
+          fontSize: Math.round(baseFontSize * companyMultiplier),
+          spacingAfter: 0
+        },
+        {
+          text: employeeData.office_location,
+          fontSize: Math.round(baseFontSize * companyMultiplier),
+          spacingAfter: Math.round(baseFontSize * 0.6)
+        },
       ];
 
     case 'low':
       return [
-        { text: employeeData.full_name, fontSize: '40px', spacingAfter: 0 },
-        { text: employeeData.position, fontSize: '40px', spacingAfter: 20 }, // пробел после блока имени/должности
-        { text: employeeData.company, fontSize: '23px', spacingAfter: 0 },
-        { text: employeeData.department, fontSize: '23px', spacingAfter: 0 },
-        { text: employeeData.office_location, fontSize: '23px', spacingAfter: 15 }, // пробел после блока компании/отдела
-        { text: `Email: ${employeeData.contact.email}`, fontSize: '25px', spacingAfter: 0 },
-        { text: `Telegram: ${employeeData.contact.telegram}`, fontSize: '25px', spacingAfter: 0 }, // пробел после блока контактов
-        { text: employeeData.branding.slogan, fontSize: '25px', spacingAfter: 0 }
+        {
+          text: employeeData.full_name,
+          fontSize: Math.round(baseFontSize * nameMultiplier),
+          spacingAfter: 0
+        },
+        {
+          text: employeeData.position,
+          fontSize: Math.round(baseFontSize * positionMultiplier),
+          spacingAfter: Math.round(baseFontSize * 0.8)
+        },
+        {
+          text: employeeData.company,
+          fontSize: Math.round(baseFontSize * companyMultiplier),
+          spacingAfter: 0
+        },
+        {
+          text: employeeData.department,
+          fontSize: Math.round(baseFontSize * companyMultiplier),
+          spacingAfter: 0
+        },
+        {
+          text: employeeData.office_location,
+          fontSize: Math.round(baseFontSize * companyMultiplier),
+          spacingAfter: Math.round(baseFontSize * 0.6)
+        },
+        {
+          text: `Email: ${employeeData.contact.email}`,
+          fontSize: Math.round(baseFontSize * contactMultiplier),
+          spacingAfter: 0
+        },
+        {
+          text: `Telegram: ${employeeData.contact.telegram}`,
+          fontSize: Math.round(baseFontSize * contactMultiplier),
+          spacingAfter: Math.round(baseFontSize * 0.4)
+        },
+        {
+          text: employeeData.branding.slogan,
+          fontSize: Math.round(baseFontSize * sloganMultiplier),
+          spacingAfter: 0
+        }
       ];
 
     default:
       return [
-        { text: employeeData.full_name, fontSize: '27px', spacingAfter: 0 },
-        { text: employeeData.position, fontSize: '27px', spacingAfter: 10 },
-        { text: employeeData.company, fontSize: '23px', spacingAfter: 0 },
-        { text: employeeData.department, fontSize: '23px', spacingAfter: 0 },
-        { text: employeeData.office_location, fontSize: '23px', spacingAfter: 0 },
+        {
+          text: employeeData.full_name,
+          fontSize: Math.round(baseFontSize * 1.2),
+          spacingAfter: 0
+        },
+        {
+          text: employeeData.position,
+          fontSize: Math.round(baseFontSize * 1.2),
+          spacingAfter: Math.round(baseFontSize * 0.4)
+        },
+        {
+          text: employeeData.company,
+          fontSize: Math.round(baseFontSize * 1.0),
+          spacingAfter: 0
+        },
+        {
+          text: employeeData.department,
+          fontSize: Math.round(baseFontSize * 1.0),
+          spacingAfter: 0
+        },
+        {
+          text: employeeData.office_location,
+          fontSize: Math.round(baseFontSize * 1.0),
+          spacingAfter: 0
+        },
       ];
   }
 }
 
-// Функция для получения настроек текста в зависимости от уровня приватности
-function getTextSettings(privacyLevel) {
+// Функция для получения адаптивных настроек текста
+function getTextSettings(privacyLevel, frameWidth, frameHeight) {
+  const baseFontSize = calculateBaseFontSize(frameWidth, frameHeight);
+
   switch (privacyLevel) {
     case 'high':
       return {
-        lineHeight: 45,
-        startY: 20,
-        strokeWidth: 3
+        lineHeight: Math.round(baseFontSize * 1.8),
+        startY: Math.round(baseFontSize * 0.8),
+        strokeWidth: Math.max(1, Math.round(baseFontSize * 0.1))
       };
 
     case 'medium':
       return {
-        lineHeight: 35,
-        startY: 30,
-        strokeWidth: 3
+        lineHeight: Math.round(baseFontSize * 1.4),
+        startY: Math.round(baseFontSize * 1.2),
+        strokeWidth: Math.max(1, Math.round(baseFontSize * 0.1))
       };
 
     case 'low':
       return {
-        lineHeight: 35,
-        startY: 20,
-        strokeWidth: 2
+        lineHeight: Math.round(baseFontSize * 1.3),
+        startY: Math.round(baseFontSize * 0.8),
+        strokeWidth: Math.max(1, Math.round(baseFontSize * 0.08))
       };
 
     default:
       return {
-        lineHeight: 40,
-        startY: 30,
-        strokeWidth: 3
+        lineHeight: Math.round(baseFontSize * 1.5),
+        startY: Math.round(baseFontSize * 1.2),
+        strokeWidth: Math.max(1, Math.round(baseFontSize * 0.1))
       };
   }
 }
@@ -157,67 +267,65 @@ export class ImageBackground extends BackgroundEffect {
         canvas.height = h;
         const ctx = canvas.getContext('2d');
 
-        // --- Отрисовка фонового изображения ---
-        switch (this.mode) {
-            case 'stretch':
-                ctx.drawImage(this.image, 0, 0, w, h);
-                break;
+        console.log(`📐 Разрешение фона: ${frameWidth}x${frameHeight}, Базовый размер шрифта: ${calculateBaseFontSize(frameWidth, frameHeight)}px`);
 
-            case 'fill':
-                const ih = this.image.naturalHeight || this.image.height;
-                const iw = this.image.naturalWidth || this.image.width;
+        // --- СНАЧАЛА рисуем фоновое изображение ---
 
-                const scale = Math.max(w / iw, h / ih);
-                const nw = iw * scale;
-                const nh = ih * scale;
+        // Сохраняем пропорции изображения
+        const imgAspect = this.image.width / this.image.height;
+        const frameAspect = frameWidth / frameHeight;
 
-                const x0 = (nw - w) / 2;
-                const y0 = (nh - h) / 2;
+        let drawWidth, drawHeight, offsetX, offsetY;
 
-                ctx.drawImage(
-                    this.image,
-                    x0, y0, w, h,
-                    0, 0, w, h
-                );
-                break;
-            default:
-                console.warn(`Unknown image mode: ${this.mode}. Using 'stretch' as fallback.`);
-                ctx.drawImage(this.image, 0, 0, w, h);
-                break;
+        if (imgAspect > frameAspect) {
+          // Изображение шире
+          drawHeight = frameHeight;
+          drawWidth = frameHeight * imgAspect;
+          offsetX = (frameWidth - drawWidth) / 2;
+          offsetY = 0;
+        } else {
+          // Изображение выше
+          drawWidth = frameWidth;
+          drawHeight = frameWidth / imgAspect;
+          offsetX = 0;
+          offsetY = (frameHeight - drawHeight) / 2;
         }
 
-        // --- Парсинг текста с файла json с использованием privacyLevel ---
+        // Рисуем изображение
+        ctx.drawImage(this.image, offsetX, offsetY, drawWidth, drawHeight);
+
+        // --- Добавляем полупрозрачный оверлей для улучшения читаемости текста ---
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(0, 0, frameWidth, frameHeight);
+
+        // --- ПОТОМ рисуем текст ПОВЕРХ всего ---
         const employeeData = parseEmployeeData(textData, this.privacyLevel);
+        const textLines = employeeDataToTextWithFontSizes(employeeData, frameWidth, frameHeight);
+        const textSettings = getTextSettings(this.privacyLevel, frameWidth, frameHeight);
 
-        // --- Преобразуем объект в текст с разными размерами шрифта ---
-        const textLines = employeeDataToTextWithFontSizes(employeeData);
-
-        // --- Получаем настройки текста для текущего уровня приватности ---
-        const textSettings = getTextSettings(this.privacyLevel);
-
-        // --- Настройки базового текста ---
+        // Настройки текста
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
         ctx.fillStyle = 'white';
-        ctx.strokeStyle = 'black';
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
         ctx.lineWidth = textSettings.strokeWidth;
 
-        // --- Отрисовка многострочного текста с разными размерами шрифта и пробелами ---
-        const startX = 20;
+        // Отрисовка текста
+        const startX = Math.round(frameWidth * 0.02);
         let currentY = textSettings.startY;
 
-        textLines.forEach((lineObj) => {
-          // Устанавливаем размер шрифта для текущей строки
-          ctx.font = `bold ${lineObj.fontSize} 'Segoe UI'`;
+        textLines.forEach((lineObj, index) => {
+          ctx.font = `bold ${lineObj.fontSize}px 'Segoe UI', Arial, sans-serif`;
 
-          // Отрисовываем текст с обводкой и заливкой
+          // Обводка для контраста
           ctx.strokeText(lineObj.text, startX, currentY);
+          // Основной текст
           ctx.fillText(lineObj.text, startX, currentY);
 
-          // Переходим к следующей строке, добавляем дополнительный пробел если нужно
+          console.log(`📝 Строка ${index + 1}: "${lineObj.text}" - размер: ${lineObj.fontSize}px`);
+
           currentY += textSettings.lineHeight;
 
-          // Добавляем дополнительный пробел после строки, если указано
           if (lineObj.spacingAfter > 0) {
             currentY += lineObj.spacingAfter;
           }
@@ -226,4 +334,22 @@ export class ImageBackground extends BackgroundEffect {
         return canvas;
     }
 }
+
+// Вспомогательная функция для отладки
+export function getFontSizeInfo(frameWidth, frameHeight) {
+  const baseFontSize = calculateBaseFontSize(frameWidth, frameHeight);
+  return {
+    frameWidth,
+    frameHeight,
+    baseFontSize,
+    calculatedSizes: {
+      name: Math.round(baseFontSize * 1.8),
+      position: Math.round(baseFontSize * 1.6),
+      company: Math.round(baseFontSize * 1.0),
+      contact: Math.round(baseFontSize * 0.9),
+      slogan: Math.round(baseFontSize * 0.8)
+    }
+  };
+}
+
 export default ImageBackground;
