@@ -45,6 +45,9 @@ npm start
 ./scripts/run.sh
 ```
 
-
 </details>
+
+## Результат работы
+
+<img src="https://github.com/HerrPhoton/T1-Hackathon-2025/blob/main/docs/result.png" alt="1" >
 
