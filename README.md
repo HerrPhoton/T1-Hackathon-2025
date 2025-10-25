@@ -28,7 +28,7 @@ cd T1-Hackathon-2025/
 ```bash
 cd web-app/
 npm install
-nom start
+npm start
 ```
 
 ## Запуск python-приложения
@@ -47,3 +47,4 @@ nom start
 
 
 </details>
+
