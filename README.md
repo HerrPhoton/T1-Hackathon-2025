@@ -1,18 +1,6 @@
 # Hackathon T1
 
-<img src="https://github.com/HerrPhoton/T1-Hackathon-2025/blob/main/docs/logo.jpg"  alt="1" width = 960px height = 260px >
-
----
-
-<details open>
-<summary><h2>Авторы</h2></summary>
-
-+ [Володина Софья](https://github.com/PiroJOJO)
-+ [Лейсле Александр](https://github.com/HerrPhoton)
-+ [Фильберт Марина](https://github.com/filbertmarina)
-### Дата: 25.10.2025г.
-
-</details>
+<img src="https://github.com/HerrPhoton/T1-Hackathon-2025/blob/main/docs/logo.jpg" alt="1" >
 
 ---
 
@@ -28,12 +16,22 @@
 <details open>
 <summary><h2>Управление проектом</h2></summary>
 
+## Конирование репозитория
+
 ```bash
 git clone https://github.com/HerrPhoton/T1-Hackathon-2025.git
 cd T1-Hackathon-2025/
 ```
 
-## Запуск
+## Запуск web-приложения
+
+```bash
+cd web-app/
+npm install
+npm start
+```
+
+## Запуск python-приложения
 
 На Windows
 
@@ -47,4 +45,6 @@ cd T1-Hackathon-2025/
 ./scripts/run.sh
 ```
 
+
 </details>
+
