@@ -176,30 +176,19 @@ export class MediaPipeSegmentor extends SegmentorBase {
 
     const { width: targetWidth, height: targetHeight, name: inputName } = this.input;
 
-    console.log(`MediaPipe segment: input size ${targetWidth}x${targetHeight}, input name: ${inputName}`);
-
-    // Подготавливаем входные данные
     const { offsetX, offsetY, drawWidth, drawHeight, videoWidth, videoHeight } =
       this._resizeAndNormalize(videoElement, targetWidth, targetHeight);
 
-    // Получаем ImageData
     const canvas = this._getOrCreatePreCanvas(targetWidth, targetHeight);
     const imageData = canvas.getContext('2d').getImageData(0, 0, targetWidth, targetHeight);
 
-    // Конвертируем в тензор
     const tensor = this._imageDataToTensor(imageData, targetWidth, targetHeight);
 
-    // Создаем ONNX тензор в формате [batch, height, width, channels]
     const inputTensor = new ort.Tensor('float32', tensor, [1, targetHeight, targetWidth, 3]);
 
-    console.log(`Input tensor shape: [1, ${targetHeight}, ${targetWidth}, 3]`);
-
     try {
-      // Запускаем инференс
-      console.log(`Running inference with input name: '${inputName}'`);
       const outputs = await this.session.run({ [inputName]: inputTensor });
 
-      // Обрабатываем результат
       const maskCanvas = this._processSegmentationOutput(
         outputs,
         videoWidth,
@@ -211,9 +200,6 @@ export class MediaPipeSegmentor extends SegmentorBase {
       return maskCanvas;
 
     } catch (error) {
-      console.error('Ошибка при сегментации MediaPipe:', error);
-
-      // Возвращаем пустую маску в случае ошибки
       const emptyCanvas = this._getOrCreateMaskCanvas(videoWidth, videoHeight);
       const ctx = emptyCanvas.getContext('2d');
       ctx.clearRect(0, 0, videoWidth, videoHeight);

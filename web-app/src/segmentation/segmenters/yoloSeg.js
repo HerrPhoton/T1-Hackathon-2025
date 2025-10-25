@@ -8,7 +8,7 @@ const MASK_THRESHOLD = 0.5;
 
 function sigmoid(x) { return 1 / (1 + Math.exp(-x)); }
 
-export class YOLOSegSegmentor extends SegmentorBase {
+export class YOLOSegmentor extends SegmentorBase {
 
   constructor(modelUrl = DEFAULT_MODEL_URL) {
     super();
@@ -229,4 +229,4 @@ export class YOLOSegSegmentor extends SegmentorBase {
   }
 }
 
-export default YOLOSegSegmentor;
+export default YOLOSegmentor;
