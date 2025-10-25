@@ -76,14 +76,14 @@ function App() {
     return preset ? preset.name : 'Свой цвет';
   };
 
-  // Обновлениие фонового цвета
+  // Обновление фонового цвета
   async function updateBackgroundColor(newColor) {
     setBackgroundColor(newColor);
 
     if (pipelineRef.current && cameraRef.current) {
       try {
         const segmenter = new YOLOSegmentor(MODEL_URL);
-        const bgEffect = new SolidColorBackground(newColor);
+        const bgEffect = new SolidColorBackground(newColor, privacyLevel);
         const bgProcessor = new BackgroundProcessor(bgEffect);
         const pipeline = new FramePipeline({ segmenter, backgroundProcessor: bgProcessor });
         await pipeline.init();
@@ -148,9 +148,17 @@ function App() {
   const [selectedPreset, setSelectedPreset] = useState(null);
 
 
+  // Обновление фонового изображения
   async function updateBackgroundImage(imageUrl) {
     try {
-      // Создаем HTMLImageElement из URL
+      if (!imageUrl) {
+        // Если imageUrl null, возвращаемся к цветному фону
+        setBackgroundMode('color');
+        setUploadedImage(null);
+        setSelectedPreset(null);
+        return;
+      }
+
       const img = new Image();
       img.crossOrigin = "anonymous";
 
@@ -160,15 +168,12 @@ function App() {
         img.src = imageUrl;
       });
 
-      // Обновляем состояние
       setSelectedPreset(imageUrl);
 
       if (pipelineRef.current) {
         try {
-          const bgEffect = new ImageBackground(img);
+          const bgEffect = new ImageBackground(img, 'stretch', privacyLevel);
           const bgProcessor = new BackgroundProcessor(bgEffect);
-
-          // Обновляем только backgroundProcessor в существующем пайплайне
           pipelineRef.current.backgroundProcessor = bgProcessor;
           console.log('Фон успешно обновлен на изображение');
         } catch (e) {
@@ -266,11 +271,13 @@ function App() {
 
   // Удалить выбранное изображение
   const removeUploadedImage = () => {
-    if (uploadedImage) {
+    if (uploadedImage && !uploadedImage.isPreset) {
       URL.revokeObjectURL(uploadedImage.url);
-      setUploadedImage(null);
-      setBackgroundMode('color');
     }
+    setUploadedImage(null);
+    setSelectedPreset(null);
+    setBackgroundMode('color');
+    updateBackgroundImage(null);
   };
 
   // Кнопка применения настроек фона
@@ -324,7 +331,23 @@ function App() {
 
     try {
       const segmenter = new YOLOSegmentor(MODEL_URL);
-      const bgEffect = new SolidColorBackground(backgroundColor);
+      let bgEffect;
+
+      if (backgroundMode === 'color') {
+        bgEffect = new SolidColorBackground(backgroundColor, privacyLevel);
+      } else if (backgroundMode === 'image' && uploadedImage) {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = uploadedImage.url;
+        });
+        bgEffect = new ImageBackground(img, 'stretch', privacyLevel);
+      } else {
+        bgEffect = new SolidColorBackground(backgroundColor, privacyLevel);
+      }
+
       const bgProcessor = new BackgroundProcessor(bgEffect);
       const pipeline = new FramePipeline({ segmenter, backgroundProcessor: bgProcessor });
 
@@ -339,8 +362,7 @@ function App() {
       return;
     }
 
-    setRunning(true)
-
+    setRunning(true);
     setStatus('running');
     loop();
   }
@@ -359,7 +381,7 @@ function App() {
     pipelineRef.current = null;
     frameCaptureRef.current = null;
 
-    setRunning(false)
+    setRunning(false);
     setFps(0);
   }
 
